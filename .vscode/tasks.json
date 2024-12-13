@@ -1,0 +1,75 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Image",
+			"type": "shell",
+			"command": "docker buildx build -f .devcontainer/Offline/Dockerfile -t libafl-offline --target libafl-offline ${workspaceFolder}",
+			"group": "build",
+			"options": {
+					"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+					"clear": false,
+					"reveal": "always",
+					"focus": true,
+			}
+		},
+		{
+			"label": "Save Image",
+			"type": "shell",
+			"command": "docker image save -o libafl-offline.tar libafl-offline",
+			"group": "build",
+			"options": {
+					"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+					"clear": false,
+					"reveal": "always",
+					"focus": true,
+			}
+		},
+		{
+			"label": "Build Cmin",
+			"type": "shell",
+			"command": "cargo make x86_64",
+			"group": "build",
+			"options": {
+					"cwd": "${workspaceFolder}/fuzzers/binary_only/qemu_cmin"
+			},
+			"presentation": {
+					"clear": false,
+					"reveal": "always",
+					"focus": true,
+			}
+		},
+		{
+			"label": "Build Coverage",
+			"type": "shell",
+			"command": "cargo make x86_64",
+			"group": "build",
+			"options": {
+					"cwd": "${workspaceFolder}/fuzzers/binary_only/qemu_coverage"
+			},
+			"presentation": {
+					"clear": false,
+					"reveal": "always",
+					"focus": true,
+			}
+		},
+		{
+			"label": "Build Launcher",
+			"type": "shell",
+			"command": "cargo make x86_64",
+			"group": "build",
+			"options": {
+					"cwd": "${workspaceFolder}/fuzzers/binary_only/qemu_launcher"
+			},
+			"presentation": {
+					"clear": false,
+					"reveal": "always",
+					"focus": true,
+			}
+		},
+	]
+}

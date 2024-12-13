@@ -1,0 +1,14 @@
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source."git+https://github.com/AFLplusplus/tinyinst-rs"]
+git = "https://github.com/AFLplusplus/tinyinst-rs"
+replace-with = "vendored-sources"
+
+[source."git+https://github.com/nyx-fuzz/libnyx.git?rev=ea6ceb994ab975b81aea0daaf64b92a3066c1e8d"]
+git = "https://github.com/nyx-fuzz/libnyx.git"
+rev = "ea6ceb994ab975b81aea0daaf64b92a3066c1e8d"
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
