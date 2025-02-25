@@ -1,4 +1,5 @@
-import "../just/env.just"
+import "../../../just/libafl-qemu.just"
+import "../fuzzer_name.just"
 
 ZASAN_SOURCE_DIR := source_directory()
 
@@ -33,7 +34,7 @@ link_zasan: compile_zasan
 	#!/bin/bash
 	source {{ DOTENV }}
 	${CROSS_CC} \
-		${ASAN_CFLAGS} \
+		${LIBRASAN_CFLAGS} \
 		-shared \
 		-nodefaultlibs \
 		-nostartfiles \

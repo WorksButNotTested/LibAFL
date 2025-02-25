@@ -1,4 +1,5 @@
-import "../just/env.just"
+import "../../../just/libafl-qemu.just"
+import "../fuzzer_name.just"
 
 FUZZ_SOURCE_DIR := source_directory()
 FUZZ_MODE_FLAG := if PROFILE == "dev" { "--dev" } else { "--release" }
