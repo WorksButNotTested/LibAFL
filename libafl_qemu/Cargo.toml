@@ -52,6 +52,7 @@ fork = ["libafl/fork"]
 ## Build libqasan for address sanitization
 build_libgasan = []
 build_libqasan = []
+use_librasan = []
 
 #! ## The following architecture features are mutually exclusive.
 

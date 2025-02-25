@@ -211,7 +211,9 @@ pub fn build() {
         nyx_bindings_file.as_path(),
     );
 
-    if cfg!(feature = "usermode") && (qemu_asan || qemu_asan_guest) {
+    let use_librasan = cfg!(feature = "use_librasan");
+
+    if cfg!(feature = "usermode") && !use_librasan && (qemu_asan || qemu_asan_guest) {
         let qasan_dir = Path::new("libqasan");
         let qasan_dir = fs::canonicalize(qasan_dir).unwrap();
         println!("cargo:rerun-if-changed={}", qasan_dir.display());
@@ -228,6 +230,27 @@ pub fn build() {
             .arg(&qasan_dir)
             .status()
             .expect("make failed")
+            .success());
+    }
+
+    if cfg!(feature = "usermode") && use_librasan {
+        let rasan_dir = Path::new("librasan");
+        let rasan_dir = fs::canonicalize(rasan_dir).unwrap();
+        println!("cargo:rerun-if-changed={}", rasan_dir.display());
+
+        let mut just = Command::new("just");
+        just.env("ARCH", cpu_target);
+        just.env("TARGET_DIR", &target_dir);
+        if cfg!(debug_assertions) {
+            just.env("PROFILE", "dev");
+        } else {
+            just.env("PROFILE", "release");
+        }
+        assert!(just
+            .current_dir(&rasan_dir)
+            .arg("build")
+            .status()
+            .expect("just build failed")
             .success());
     }
 }
