@@ -171,3 +171,12 @@ pub unsafe extern "C" fn asan_swap(enabled: bool) {
     /* Don't log since this function is on the logging path */
     QasanHost::swap(enabled).unwrap();
 }
+
+#[used]
+#[link_section = ".init_array"]
+static INIT: fn() = ctor;
+
+#[no_mangle]
+fn ctor() {
+    drop(FRONTEND.lock());
+}
