@@ -393,6 +393,75 @@ jobs:
         shell: bash
         run: ARCH=${{ matrix.arch }} RUN_ON_CI=1 LLVM_CONFIG=llvm-config-${{env.MAIN_LLVM_VERSION}} ./scripts/test_fuzzer.sh ${{ matrix.fuzzer }}
 
+  librasan-build:
+      needs:
+        - changes
+      if: ${{ needs.changes.outputs.qemu == 'true' }}
+      strategy:
+        matrix:
+          os: [ubuntu-24.04]
+          arch:
+            - aarch64
+            - arm
+            - i386
+            - ppc
+            - x86_64
+          profile:
+            - dev
+            - release
+
+      runs-on: [ self-hosted, qemu ]
+      container: registry.gitlab.com/qemu-project/qemu/qemu/ubuntu2204:latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: ./.github/workflows/qemu-fuzzer-tester-prepare
+        - name: Build
+          if: runner.os == 'Linux'
+          shell: bash
+          run: |
+            ARCH=${{ matrix.arch }} \
+            PROFILE=${{ matrix.profile }} \
+            RUN_ON_CI=1 \
+            LLVM_CONFIG=llvm-config-${{env.MAIN_LLVM_VERSION}} \
+            just \
+              -d ./libafl_qemu/librasan/ \
+              -f Justfile \
+              build
+
+  librasan-test:
+      needs:
+        - changes
+      if: ${{ needs.changes.outputs.qemu == 'true' }}
+      strategy:
+        matrix:
+          os: [ubuntu-24.04]
+          arch:
+            - aarch64
+            - arm
+            - i386
+            - ppc
+            - x86_64
+          profile:
+            - dev
+
+      runs-on: [ self-hosted, qemu ]
+      container: registry.gitlab.com/qemu-project/qemu/qemu/ubuntu2204:latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: ./.github/workflows/qemu-fuzzer-tester-prepare
+        - name: Build
+          if: runner.os == 'Linux'
+          shell: bash
+          run: |
+            ARCH=${{ matrix.arch }} \
+            PROFILE=${{ matrix.profile }} \
+            RUN_ON_CI=1 \
+            LLVM_CONFIG=llvm-config-${{env.MAIN_LLVM_VERSION}} \
+            just \
+              -d ./libafl_qemu/librasan/ \
+              -f Justfile \
+              test
+
   fuzzers-qemu-system:
     needs:
       - changes
