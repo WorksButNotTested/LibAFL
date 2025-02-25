@@ -424,8 +424,7 @@ jobs:
             RUN_ON_CI=1 \
             LLVM_CONFIG=llvm-config-${{env.MAIN_LLVM_VERSION}} \
             just \
-              -d ./libafl_qemu/librasan/ \
-              -f Justfile \
+              -f ./libafl_qemu/librasan/Justfile \
               build
 
   librasan-test:
@@ -458,8 +457,7 @@ jobs:
             RUN_ON_CI=1 \
             LLVM_CONFIG=llvm-config-${{env.MAIN_LLVM_VERSION}} \
             just \
-              -d ./libafl_qemu/librasan/ \
-              -f Justfile \
+              -f ./libafl_qemu/librasan/Justfile \
               test
 
   fuzzers-qemu-system:
