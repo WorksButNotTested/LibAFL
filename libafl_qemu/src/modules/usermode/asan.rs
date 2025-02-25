@@ -6,6 +6,7 @@ use std::{
     env,
     fmt::{Debug, Display},
     fs,
+    path::PathBuf,
     pin::Pin,
     sync::Mutex,
 };
@@ -982,10 +983,22 @@ where
             .parent()
             .unwrap()
             .join("libqasan.so");
+
+        let asan_lib = env::var_os("CUSTOM_ASAN_PATH")
+            .map_or(asan_lib, |x| PathBuf::from(x.to_string_lossy().to_string()));
+
+        assert!(
+            asan_lib.as_path().exists(),
+            "The ASAN library doesn't exist: {asan_lib:#?}"
+        );
+
         let asan_lib = asan_lib
             .to_str()
             .expect("The path to the asan lib is invalid")
             .to_string();
+
+        println!("Loading ASAN: {asan_lib:}");
+
         let add_asan =
             |e: &str| "LD_PRELOAD=".to_string() + &asan_lib + " " + &e["LD_PRELOAD=".len()..];
 
