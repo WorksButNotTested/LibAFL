@@ -204,7 +204,7 @@ where
 
         // Let the use skip preloading the ASAN DSO. Maybe they want to use
         // their own implementation.
-        if env::var_os("SKIP_ASAN_LD_PRELOAD").is_none() {
+        let asan_lib = if env::var_os("SKIP_ASAN_LD_PRELOAD").is_none() {
             let current = env::current_exe().unwrap();
             let asan_lib = fs::canonicalize(current)
                 .unwrap()
@@ -256,7 +256,10 @@ where
                 args.insert(1, "LD_PRELOAD=".to_string() + &asan_lib);
                 args.insert(1, "-E".into());
             }
-        }
+            Some(asan_lib)
+        } else {
+            None
+        };
 
         if env::var("QASAN_DEBUG").is_ok() {
             args.push("-E".into());
@@ -270,7 +273,7 @@ where
 
         *qemu_params = QemuParams::Cli(args);
 
-        self.asan_lib = Some(asan_lib);
+        self.asan_lib = asan_lib;
     }
 
     fn post_qemu_init<ET>(&mut self, _qemu: Qemu, _emulator_modules: &mut EmulatorModules<ET, I, S>)
