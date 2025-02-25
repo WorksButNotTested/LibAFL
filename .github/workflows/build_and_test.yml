@@ -414,7 +414,7 @@ jobs:
       container: registry.gitlab.com/qemu-project/qemu/qemu/ubuntu2204:latest
       steps:
         - uses: actions/checkout@v4
-        - uses: ./.github/workflows/qemu-fuzzer-tester-prepare
+        - uses: ./.github/workflows/librasan-prepare
         - name: Build
           if: runner.os == 'Linux'
           shell: bash
@@ -447,7 +447,7 @@ jobs:
       container: registry.gitlab.com/qemu-project/qemu/qemu/ubuntu2204:latest
       steps:
         - uses: actions/checkout@v4
-        - uses: ./.github/workflows/qemu-fuzzer-tester-prepare
+        - uses: ./.github/workflows/librasan-prepare
         - name: Build
           if: runner.os == 'Linux'
           shell: bash
