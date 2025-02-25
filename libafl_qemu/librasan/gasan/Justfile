@@ -8,10 +8,10 @@ compile_gasan:
 	#!/bin/bash
 	source {{ DOTENV }}
 	cargo \
-		+${CHANNEL} \
+		+nightly \
 		build \
 		--package gasan \
-		--target ${TARGET} \
+		--target ${CROSS_TARGET} \
 		--profile {{ PROFILE }} \
 		--target-dir {{ TARGET_DIR }}
 
@@ -20,10 +20,10 @@ fix_gasan:
 	#!/bin/bash
 	source {{ DOTENV }}
 	cargo \
-		+${CHANNEL} \
+		+nightly \
 		fix \
 		--package gasan \
-		--target ${TARGET} \
+		--target ${CROSS_TARGET} \
 		--profile {{ PROFILE }} \
 		--target-dir {{ TARGET_DIR }} \
 		--features test \
@@ -33,7 +33,7 @@ fix_gasan:
 link_gasan: compile_gasan build_dummy
 	#!/bin/bash
 	source {{ DOTENV }}
-	${ASAN_CC} \
+	${CROSS_CC} \
 		${ASAN_CFLAGS} \
 		-shared \
 		-nodefaultlibs \
@@ -59,22 +59,22 @@ link_gasan: compile_gasan build_dummy
 		-u reallocarray \
 		-u valloc \
 		-u write \
-		-o {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/_libgasan.so \
+		-o {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/_libgasan.so \
 		-Wl,--version-script={{ GASAN_SOURCE_DIR }}/gasan.map \
 		-Wl,--gc-sections \
 		-Wl,--no-undefined \
-		{{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/libgasan.a \
-		-L {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }} \
+		{{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/libgasan.a \
+		-L {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }} \
 		"-ldummy_libc"
 
 [unix]
 strip_gasan: link_gasan
 	#!/bin/bash
 	source {{ DOTENV }}
-	${ASAN_STRIP} \
+	${CROSS_STRIP} \
 		--strip-unneeded \
-		-o {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/libgasan.so \
-		{{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/_libgasan.so
+		-o {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/libgasan.so \
+		{{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/_libgasan.so
 
 [unix]
 build_gasan: strip_gasan

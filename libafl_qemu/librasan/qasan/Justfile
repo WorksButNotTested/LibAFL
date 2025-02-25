@@ -8,10 +8,10 @@ compile_qasan:
 	#!/bin/bash
 	source {{ DOTENV }}
 	cargo \
-		+${CHANNEL} \
+		+nightly \
 		build \
 		--package qasan \
-		--target ${TARGET} \
+		--target ${CROSS_TARGET} \
 		--profile {{ PROFILE }} \
 		--target-dir {{ TARGET_DIR }}
 
@@ -20,10 +20,10 @@ fix_qasan:
 	#!/bin/bash
 	source {{ DOTENV }}
 	cargo \
-		+${CHANNEL} \
+		+nightly \
 		fix \
 		--package qasan \
-		--target ${TARGET} \
+		--target ${CROSS_TARGET} \
 		--profile {{ PROFILE }} \
 		--target-dir {{ TARGET_DIR }} \
 		--features test \
@@ -33,7 +33,7 @@ fix_qasan:
 link_qasan: compile_qasan build_dummy
 	#!/bin/bash
 	source {{ DOTENV }}
-	${ASAN_CC} \
+	${CROSS_CC} \
 		${ASAN_CFLAGS} \
 		-shared \
 		-nodefaultlibs \
@@ -59,22 +59,22 @@ link_qasan: compile_qasan build_dummy
 		-u reallocarray \
 		-u valloc \
 		-u write \
-		-o {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/_libqasan.so \
+		-o {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/_libqasan.so \
 		-Wl,--version-script={{ QASAN_SOURCE_DIR }}/qasan.map \
 		-Wl,--gc-sections \
 		-Wl,--no-undefined \
-		{{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/libqasan.a \
-		-L {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }} \
+		{{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/libqasan.a \
+		-L {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }} \
 		"-ldummy_libc"
 
 [unix]
 strip_qasan: link_qasan
 	#!/bin/bash
 	source {{ DOTENV }}
-	${ASAN_STRIP} \
+	${CROSS_STRIP} \
 		--strip-unneeded \
-		-o {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/libqasan.so \
-		{{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/_libqasan.so
+		-o {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/libqasan.so \
+		{{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/_libqasan.so
 
 [unix]
 build_qasan: strip_qasan

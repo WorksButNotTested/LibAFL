@@ -7,10 +7,10 @@ compile_zasan:
 	#!/bin/bash
 	source {{ DOTENV }}
 	cargo \
-		+${CHANNEL} \
+		+nightly \
 		build \
 		--package zasan \
-		--target ${TARGET} \
+		--target ${CROSS_TARGET} \
 		--profile {{ PROFILE }} \
 		--target-dir {{ TARGET_DIR }}
 
@@ -19,10 +19,10 @@ fix_zasan:
 	#!/bin/bash
 	source {{ DOTENV }}
 	cargo \
-		+${CHANNEL} \
+		+nightly \
 		fix \
 		--package zasan \
-		--target ${TARGET} \
+		--target ${CROSS_TARGET} \
 		--profile {{ PROFILE }} \
 		--target-dir {{ TARGET_DIR }} \
 		--features test \
@@ -32,7 +32,7 @@ fix_zasan:
 link_zasan: compile_zasan
 	#!/bin/bash
 	source {{ DOTENV }}
-	${ASAN_CC} \
+	${CROSS_CC} \
 		${ASAN_CFLAGS} \
 		-shared \
 		-nodefaultlibs \
@@ -58,20 +58,20 @@ link_zasan: compile_zasan
 		-u reallocarray \
 		-u valloc \
 		-u write \
-		-o {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/_libzasan.so \
+		-o {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/_libzasan.so \
 		-Wl,--version-script={{ ZASAN_SOURCE_DIR }}/zasan.map \
 		-Wl,--gc-sections \
 		-Wl,--no-undefined \
-		{{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/libzasan.a \
+		{{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/libzasan.a \
 
 [unix]
 strip_zasan: link_zasan
 	#!/bin/bash
 	source {{ DOTENV }}
-	${ASAN_STRIP} \
+	${CROSS_STRIP} \
 		--strip-unneeded \
-		-o {{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/libzasan.so \
-		{{ TARGET_DIR }}/$TARGET/{{ PROFILE_DIR }}/_libzasan.so
+		-o {{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/libzasan.so \
+		{{ TARGET_DIR }}/$CROSS_TARGET/{{ PROFILE_DIR }}/_libzasan.so
 
 [unix]
 build_zasan: strip_zasan
