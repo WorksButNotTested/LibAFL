@@ -411,7 +411,7 @@ jobs:
             - release
 
       runs-on: [ self-hosted, qemu ]
-      container: registry.gitlab.com/qemu-project/qemu/qemu/ubuntu2204:latest
+      container: ubuntu:24.04
       steps:
         - uses: actions/checkout@v4
         - uses: ./.github/workflows/librasan-prepare
@@ -444,7 +444,7 @@ jobs:
             - dev
 
       runs-on: [ self-hosted, qemu ]
-      container: registry.gitlab.com/qemu-project/qemu/qemu/ubuntu2204:latest
+      container: ubuntu:24.04
       steps:
         - uses: actions/checkout@v4
         - uses: ./.github/workflows/librasan-prepare
