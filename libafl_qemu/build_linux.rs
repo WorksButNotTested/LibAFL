@@ -248,7 +248,13 @@ pub fn build() {
         }
         assert!(just
             .current_dir(&rasan_dir)
-            .arg("build")
+            .arg("build_gasan")
+            .status()
+            .expect("just build failed")
+            .success());
+        assert!(just
+            .current_dir(&rasan_dir)
+            .arg("build_qasan")
             .status()
             .expect("just build failed")
             .success());
