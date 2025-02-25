@@ -66,7 +66,7 @@ RUN apt-get update && \
 RUN set -ex &&\
   wget https://apt.llvm.org/llvm.sh &&\
   chmod +x llvm.sh &&\
-  ./llvm.sh ${LLVM_VERSION}
+  ./llvm.sh ${LLVM_VERSION} all
 
 RUN git config --global core.pager cat
 
