@@ -1,12 +1,6 @@
 #![allow(clippy::cast_possible_wrap)]
 
-use std::{
-    env,
-    fmt::{self, Debug, Formatter},
-    fs,
-    ops::Range,
-    path::PathBuf,
-};
+use std::{env, fmt::Debug, fs, ops::Range, path::PathBuf};
 
 use libafl_qemu_sys::{GuestAddr, MapInfo};
 
@@ -25,33 +19,10 @@ use crate::{
     QemuParams,
 };
 
-#[derive(Clone)]
-struct QemuAsanGuestMapping {
-    start: GuestAddr,
-    end: GuestAddr,
-    path: String,
-}
-
-impl Debug for QemuAsanGuestMapping {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:016x}-0x{:016x} {}", self.start, self.end, self.path)
-    }
-}
-
-impl From<&MapInfo> for QemuAsanGuestMapping {
-    fn from(map: &MapInfo) -> QemuAsanGuestMapping {
-        let path = map.path().map(ToString::to_string).unwrap_or_default();
-        let start = map.start();
-        let end = map.end();
-        QemuAsanGuestMapping { start, end, path }
-    }
-}
-
 #[derive(Debug)]
 pub struct AsanGuestModule<F> {
     env: Vec<(String, String)>,
     filter: F,
-    mappings: Option<Vec<QemuAsanGuestMapping>>,
     asan_lib: Option<String>,
 }
 
@@ -107,12 +78,22 @@ impl<F> AsanGuestModule<F>
 where
     F: AddressFilter,
 {
+    const SHADOW_RANGES: [Range<GuestAddr>; 2] = [
+        Range {
+            start: Self::LOW_SHADOW_START,
+            end: Self::LOW_SHADOW_END + 1,
+        },
+        Range {
+            start: Self::HIGH_SHADOW_START,
+            end: Self::HIGH_SHADOW_END + 1,
+        },
+    ];
+
     #[must_use]
     pub fn new(env: &[(String, String)], filter: F) -> Self {
         Self {
             env: env.to_vec(),
             filter,
-            mappings: None,
             asan_lib: None,
         }
     }
@@ -144,15 +125,11 @@ where
     }
 
     /* Don't sanitize the sanitizer! */
-    unsafe {
-        if h.mappings
-            .as_mut()
-            .unwrap_unchecked()
-            .iter()
-            .any(|m| m.start <= pc && pc < m.end)
-        {
-            return None;
-        }
+    if AsanGuestModule::<F>::SHADOW_RANGES
+        .iter()
+        .any(|r| r.contains(&pc))
+    {
+        return None;
     }
 
     let size = info.size();
@@ -306,10 +283,7 @@ where
             println!("mapping: {mapping:#?}");
         }
 
-        let mappings = qemu
-            .mappings()
-            .map(|m| QemuAsanGuestMapping::from(&m))
-            .collect::<Vec<QemuAsanGuestMapping>>();
+        let mappings = qemu.mappings().collect::<Vec<MapInfo>>();
 
         for mapping in &mappings {
             println!("guest mapping: {mapping:#?}");
@@ -317,22 +291,22 @@ where
 
         mappings
             .iter()
-            .find(|m| m.start <= Self::HIGH_SHADOW_START && m.end > Self::HIGH_SHADOW_END)
+            .find(|m| m.start() <= Self::HIGH_SHADOW_START && m.end() > Self::HIGH_SHADOW_END)
             .expect("HighShadow not found, confirm ASAN DSO is loaded in the guest");
 
         mappings
             .iter()
-            .find(|m| m.start <= Self::LOW_SHADOW_START && m.end > Self::LOW_SHADOW_END)
+            .find(|m| m.start() <= Self::LOW_SHADOW_START && m.end() > Self::LOW_SHADOW_END)
             .expect("LowShadow not found, confirm ASAN DSO is loaded in the guest");
 
-        let mappings = mappings
-            .iter()
-            .filter(|m| &m.path == self.asan_lib.as_ref().unwrap())
-            .cloned()
-            .collect::<Vec<QemuAsanGuestMapping>>();
-
-        for mapping in &mappings {
-            println!("asan mapping: {mapping:#?}");
+        if let Some(asan_lib) = &self.asan_lib {
+            mappings
+                .iter()
+                .filter(|m| match m.path() {
+                    Some(p) => p == asan_lib,
+                    None => false,
+                })
+                .for_each(|m| println!("asan mapping: {m:#?}"));
         }
 
         emulator_modules.reads(
