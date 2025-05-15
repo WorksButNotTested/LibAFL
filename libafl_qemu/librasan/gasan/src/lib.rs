@@ -6,7 +6,7 @@ use core::ffi::{CStr, c_char, c_void};
 use asan::{
     GuestAddr,
     allocator::{
-        backend::{dlmalloc::DlmallocBackend, mimalloc::MimallocBackend},
+        backend::dlmalloc::DlmallocBackend,
         frontend::{AllocatorFrontend, default::DefaultFrontend},
     },
     hooks::PatchedHooks,
@@ -31,7 +31,7 @@ type Syms = DlSymSymbols<LookupTypeNext>;
 
 type GasanMmap = LibcMmap<Syms>;
 
-type GasanBackend = MimallocBackend<DlmallocBackend<GasanMmap>>;
+type GasanBackend = DlmallocBackend<GasanMmap>;
 
 pub type GasanFrontend =
     DefaultFrontend<GasanBackend, GuestShadow<GasanMmap, DefaultShadowLayout>, GuestFastTracking>;
@@ -43,7 +43,7 @@ const PAGE_SIZE: usize = 4096;
 static FRONTEND: Lazy<Mutex<GasanFrontend>> = Lazy::new(|| {
     LibcLogger::initialize::<GasanSyms>(Level::Info);
     debug!("init");
-    let backend = GasanBackend::new(DlmallocBackend::new(PAGE_SIZE));
+    let backend = GasanBackend::new(PAGE_SIZE);
     let shadow = GuestShadow::<GasanMmap, DefaultShadowLayout>::new().unwrap();
     let tracking = GuestFastTracking::new().unwrap();
     let frontend = GasanFrontend::new(
