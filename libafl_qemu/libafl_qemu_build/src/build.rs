@@ -255,18 +255,22 @@ pub fn build(
     jobs: Option<u32>,
 ) -> BuildResult {
     let mut cpu_target = cpu_target.to_string();
-    // qemu-system-arm supports both big and little endian configurations and so
-    // the "be" feature should be ignored in this configuration. Also
-    // ignore the feature if we are running in clippy which enables all the
-    // features at once (disabling the check for mutually exclusive options)
-    // resulting in cpu_target being set to 'x86_64' above which obviously
-    // doesn't support BE.
-    if is_big_endian && cpu_target == "arm" && is_usermode && !cfg!(feature = "clippy") {
+    // qemu-system-arm/aarch64 supports both big and little endian
+    // configurations and so the "be" feature should be ignored in this
+    // configuration. Also ignore the feature if we are running in clippy which
+    // enables all the features at once (disabling the check for mutually
+    // exclusive options) resulting in cpu_target being set to 'x86_64' above
+    // which obviously doesn't support BE.
+    if is_big_endian && is_usermode && !cfg!(feature = "clippy") {
         // We have told rustc which CPU target to use above (it doesn't need
         // to make any changes for endianness), however, we need QEMU to be
         // built for the right endian-ness, so we update the cpu_target for
         // here on down
-        cpu_target += "eb";
+        if cpu_target == "arm" {
+            cpu_target += "eb";
+        } else if cpu_target == "aarch64" {
+            cpu_target += "_be";
+        }
     }
 
     if !is_big_endian && cpu_target == "mips" && !cfg!(feature = "clippy") {

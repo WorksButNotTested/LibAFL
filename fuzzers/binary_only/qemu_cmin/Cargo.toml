@@ -26,6 +26,8 @@ i386 = ["libafl_qemu/i386"]
 aarch64 = ["libafl_qemu/aarch64"]
 mips = ["libafl_qemu/mips"]
 ppc = ["libafl_qemu/ppc", "be"]
+armbe = ["arm", "be"]
+aarch64_be = ["aarch64", "be"]
 
 [build-dependencies]
 vergen = { version = "9.0.1", features = ["build", "cargo", "rustc", "si"] }

@@ -252,11 +252,36 @@ pub fn build() {
             "release"
         };
 
+        let arch = match cpu_target.as_str() {
+            "x86_64" => "x86_64",
+            "arm" => {
+                if cfg!(feature = "be") {
+                    "armbe"
+                } else {
+                    "arm"
+                }
+            }
+            "aarch64" => {
+                if cfg!(feature = "be") {
+                    "aarch64_be"
+                } else {
+                    "aarch64"
+                }
+            }
+            "i386" => "i386",
+            "mips" => "mips",
+            "ppc" => "ppc",
+            "riscv32" => "riscv32",
+            "riscv64" => "riscv64",
+            "hexagon" => "hexagon",
+            _ => panic!("Unsupported architecture"),
+        };
+
         let guest_args = [
             "just",
             "-d", asan_dir_str,
             "-f", just_file_str,
-            "--set", "ARCH", &cpu_target,
+            "--set", "ARCH", &arch,
             "--set", "PROFILE", profile,
             "--set", "TARGET_DIR", target_dir_str,
             "build_guest"];
@@ -266,7 +291,7 @@ pub fn build() {
             "just",
             "-d", asan_dir_str,
             "-f", just_file_str,
-            "--set", "ARCH", &cpu_target,
+            "--set", "ARCH", &arch,
             "--set", "PROFILE", profile,
             "--set", "TARGET_DIR", target_dir_str,
             "build_host"];

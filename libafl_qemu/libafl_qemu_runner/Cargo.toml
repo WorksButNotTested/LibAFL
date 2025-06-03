@@ -19,34 +19,47 @@ readme.workspace = true
 [[bin]]
 name = "runner-arm"
 path = "src/arm.rs"
-required-features = ["arm"]
+required-features = ["arm", "le"]
+
+[[bin]]
+name = "runner-armeb"
+path = "src/armeb.rs"
+required-features = ["arm", "be"]
 
 [[bin]]
 name = "runner-x86_64"
 path = "src/x86_64.rs"
-required-features = ["x86_64"]
+required-features = ["x86_64", "le"]
 
 [[bin]]
 name = "runner-i386"
 path = "src/i386.rs"
-required-features = ["i386"]
+required-features = ["i386", "le"]
 
 [[bin]]
 name = "runner-aarch64"
+path = "src/aarch64_be.rs"
+required-features = ["aarch64", "le"]
+
+[[bin]]
+name = "runner-aarch64_be"
 path = "src/aarch64.rs"
-required-features = ["aarch64"]
+required-features = ["aarch64", "be"]
 
 [[bin]]
 name = "runner-ppc"
 path = "src/ppc.rs"
-required-features = ["ppc"]
+required-features = ["ppc", "be"]
 
 [features]
 default = ["std"]
 std = []
 clippy = []
 ## Set emulator to big endian
+le = []
 be = ["libafl_qemu/be"]
+armbe = ["arm", "be"]
+aarch64_be = ["aarch64", "be"]
 
 #! ## Mutually exclusive architectures
 arm = ["libafl_qemu/arm"]
