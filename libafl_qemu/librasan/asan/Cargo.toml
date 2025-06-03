@@ -65,7 +65,7 @@ nostd-musl = { version = "0.1.5", default-features = false, features = [
 nostd-printf = { version = "0.1.4", default-features = false }
 
 readonly = { version = "0.2.12", default-features = false }
-rustix = { version = "1.0.0", default-features = false, features = [
+rustix = { git = "https://github.com/WorksButNotTested/rustix.git", rev = "5cfb601ef435a131575866c1351e5a0310338d20", default-features = false, features = [
   "fs",
   "mm",
   "process",
