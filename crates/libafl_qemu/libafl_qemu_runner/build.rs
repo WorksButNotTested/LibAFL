@@ -35,6 +35,7 @@ fn main() {
         .unwrap();
 
     assert_unique_feature!("arm", "aarch64", "i386", "x86_64", "mips", "ppc", "hexagon");
+    assert_unique_feature!("be", "le");
 
     let cpu_target = if cfg!(feature = "x86_64") {
         "x86_64".to_string()

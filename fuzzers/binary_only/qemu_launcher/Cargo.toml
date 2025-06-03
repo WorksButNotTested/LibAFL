@@ -29,6 +29,8 @@ aarch64 = ["libafl_qemu/aarch64"]
 mips = ["libafl_qemu/mips"]
 ppc = ["libafl_qemu/ppc", "be"]
 hexagon = ["libafl_qemu/hexagon"]
+armbe = ["arm", "be"]
+aarch64_be = ["aarch64", "be"]
 
 [profile.release]
 lto = true

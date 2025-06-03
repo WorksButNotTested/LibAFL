@@ -45,10 +45,8 @@ pub fn build() {
         "arm", "aarch64", "i386", "x86_64", "mips", "ppc", "hexagon", "riscv32", "riscv64"
     );
 
-    // Make sure that we don't have BE set for any architecture other than arm and mips
-    // Sure aarch64 may support BE, but its not in common usage and we don't
-    // need it yet and so haven't tested it
-    assert_unique_feature!("be", "aarch64", "i386", "x86_64", "hexagon", "riscv32", "riscv64");
+    // Make sure that we don't have BE set for any architecture other than arm, aarch64 and mips
+    assert_unique_feature!("be", "i386", "x86_64", "hexagon", "riscv32", "riscv64");
 
     let cpu_target = if cfg!(feature = "x86_64") {
         "x86_64".to_string()
